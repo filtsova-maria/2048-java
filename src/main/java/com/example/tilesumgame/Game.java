@@ -33,6 +33,7 @@ public class Game extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        // Set up logging
         logger.setLevel(Level.FINE);
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setLevel(Level.FINE);
@@ -131,43 +132,156 @@ public class Game extends Application {
     }
 
     private boolean moveLeft() {
-
-        return false;
+        // TODO: refactor this method to avoid code duplication between different directions
+        boolean moved = false;
+        for (int row = 0; row < gridSize; row++) {
+            int[] newRow = new int[gridSize];
+            int position = 0;
+            // Move non-zero values to the left
+            for (int col = 0; col < gridSize; col++) {
+                if (tiles[row][col].getValue() != 0) {
+                    newRow[position++] = tiles[row][col].getValue();
+                }
+            }
+            // Merge adjacent equal values
+            for (int col = 0; col < gridSize - 1; col++) {
+                if (newRow[col] != 0 && newRow[col] == newRow[col + 1]) {
+                    newRow[col] *= 2;
+                    newRow[col + 1] = 0;
+                    moved = true;
+                }
+            }
+            // Move non-zero values to the left again
+            position = 0;
+            int[] finalRow = new int[gridSize];
+            for (int col = 0; col < gridSize; col++) {
+                if (newRow[col] != 0) {
+                    finalRow[position++] = newRow[col];
+                }
+            }
+            // Update the row and check if it has changed
+            for (int col = 0; col < gridSize; col++) {
+                if (tiles[row][col].getValue() != finalRow[col]) {
+                    tiles[row][col].setValue(finalRow[col]);
+                    moved = true;
+                }
+            }
+        }
+        return moved;
     }
 
     private boolean moveRight() {
-        return false;
-
+        boolean moved = false;
+        for (int row = 0; row < gridSize; row++) {
+            int[] newRow = new int[gridSize];
+            int position = gridSize - 1;
+            // Move non-zero values to the right
+            for (int col = gridSize - 1; col >= 0; col--) {
+                if (tiles[row][col].getValue() != 0) {
+                    newRow[position--] = tiles[row][col].getValue();
+                }
+            }
+            // Merge adjacent equal values
+            for (int col = gridSize - 1; col > 0; col--) {
+                if (newRow[col] != 0 && newRow[col] == newRow[col - 1]) {
+                    newRow[col] *= 2;
+                    newRow[col - 1] = 0;
+                    moved = true;
+                }
+            }
+            // Move non-zero values to the right again
+            position = gridSize - 1;
+            int[] finalRow = new int[gridSize];
+            for (int col = gridSize - 1; col >= 0; col--) {
+                if (newRow[col] != 0) {
+                    finalRow[position--] = newRow[col];
+                }
+            }
+            // Update the row and check if it has changed
+            for (int col = 0; col < gridSize; col++) {
+                if (tiles[row][col].getValue() != finalRow[col]) {
+                    tiles[row][col].setValue(finalRow[col]);
+                    moved = true;
+                }
+            }
+        }
+        return moved;
     }
 
     private boolean moveUp() {
-        return false;
-
+        boolean moved = false;
+        for (int col = 0; col < gridSize; col++) {
+            int[] newCol = new int[gridSize];
+            int position = 0;
+            // Move non-zero values up
+            for (int row = 0; row < gridSize; row++) {
+                if (tiles[row][col].getValue() != 0) {
+                    newCol[position++] = tiles[row][col].getValue();
+                }
+            }
+            // Merge adjacent equal values
+            for (int row = 0; row < gridSize - 1; row++) {
+                if (newCol[row] != 0 && newCol[row] == newCol[row + 1]) {
+                    newCol[row] *= 2;
+                    newCol[row + 1] = 0;
+                    moved = true;
+                }
+            }
+            // Move non-zero values up again
+            position = 0;
+            int[] finalCol = new int[gridSize];
+            for (int row = 0; row < gridSize; row++) {
+                if (newCol[row] != 0) {
+                    finalCol[position++] = newCol[row];
+                }
+            }
+            // Update the column and check if it has changed
+            for (int row = 0; row < gridSize; row++) {
+                if (tiles[row][col].getValue() != finalCol[row]) {
+                    tiles[row][col].setValue(finalCol[row]);
+                    moved = true;
+                }
+            }
+        }
+        return moved;
     }
 
     private boolean moveDown() {
-        return false;
-
-    }
-
-    private boolean mergeUp(int[] values) {
-        return false;
-
-    }
-
-    private boolean mergeDown(int[] values) {
-        return false;
-
-    }
-
-    private boolean mergeLeft(int[] values) {
-        return false;
-
-    }
-
-    private boolean mergeRight(int[] values) {
-        return false;
-
+        boolean moved = false;
+        for (int col = 0; col < gridSize; col++) {
+            int[] newCol = new int[gridSize];
+            int position = gridSize - 1;
+            // Move non-zero values down
+            for (int row = gridSize - 1; row >= 0; row--) {
+                if (tiles[row][col].getValue() != 0) {
+                    newCol[position--] = tiles[row][col].getValue();
+                }
+            }
+            // Merge adjacent equal values
+            for (int row = gridSize - 1; row > 0; row--) {
+                if (newCol[row] != 0 && newCol[row] == newCol[row - 1]) {
+                    newCol[row] *= 2;
+                    newCol[row - 1] = 0;
+                    moved = true;
+                }
+            }
+            // Move non-zero values down again
+            position = gridSize - 1;
+            int[] finalCol = new int[gridSize];
+            for (int row = gridSize - 1; row >= 0; row--) {
+                if (newCol[row] != 0) {
+                    finalCol[position--] = newCol[row];
+                }
+            }
+            // Update the column and check if it has changed
+            for (int row = 0; row < gridSize; row++) {
+                if (tiles[row][col].getValue() != finalCol[row]) {
+                    tiles[row][col].setValue(finalCol[row]);
+                    moved = true;
+                }
+            }
+        }
+        return moved;
     }
 
     public static void main(String[] args) {
