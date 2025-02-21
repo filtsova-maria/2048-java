@@ -13,7 +13,13 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.Random;
 
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+
 public class Game extends Application {
+    private static final Logger logger = Logger.getLogger(Game.class.getName());
+
     private static final int gridSize = 4;
     private static final int tileSize = 100;
     private static final int padding = 20;
@@ -27,6 +33,11 @@ public class Game extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
+        logger.setLevel(Level.FINE);
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.FINE);
+        logger.addHandler(consoleHandler);
+
         int windowSize = tileSize * gridSize + padding;
         gridPane.setAlignment(Pos.CENTER);
         gridPane.setHgap(tileGap);
@@ -50,6 +61,7 @@ public class Game extends Application {
             if (moved && !isBoardFull()) {
                 spawnTile();
             }
+            logger.fine(this::printGrid); // Log grid state after each move
         });
 
         restartButton.setOnAction(_ -> {
@@ -69,6 +81,8 @@ public class Game extends Application {
         stage.setTitle("2048 Game");
         stage.setScene(scene);
         stage.show();
+
+        logger.fine(this::printGrid); // Log initial grid state
     }
 
     private void initializeGrid() {
@@ -79,6 +93,19 @@ public class Game extends Application {
                 gridPane.add(tile.getStack(), col, row);
             }
         }
+    }
+
+    private String printGrid() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n");
+        for (int row = 0; row < gridSize; row++) {
+            for (int col = 0; col < gridSize; col++) {
+                sb.append(tiles[row][col].getValue()).append("\t");
+            }
+            sb.append("\n");
+        }
+        sb.append("\n");
+        return sb.toString();
     }
 
     private void spawnTile() {
@@ -104,6 +131,7 @@ public class Game extends Application {
     }
 
     private boolean moveLeft() {
+
         return false;
     }
 
