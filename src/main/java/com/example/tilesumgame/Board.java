@@ -1,7 +1,6 @@
 package com.example.tilesumgame;
 
 import java.util.Random;
-import java.util.logging.Level;
 
 /*
  * Represents the logical game board for the 2048 game of given size.
@@ -9,12 +8,10 @@ import java.util.logging.Level;
 public class Board {
     private final int[][] grid;
     private final int gridSize;
-    private final GameLogger logger;
 
     public Board(int size) {
         this.grid = new int[size][size];
         this.gridSize = size;
-        this.logger = GameLogger.getInstance();
         initializeGrid();
     }
 
@@ -86,18 +83,78 @@ public class Board {
         return true;
     }
 
+    /**
+     * Moves the tiles on the game board to the left.
+     *
+     * @return true if any tiles were moved, false otherwise.
+     */
     public boolean moveLeft() {
+        return move((row, col) -> grid[row][col], (row, col, value) -> grid[row][col] = value);
+    }
+
+    /**
+     * Moves the tiles on the game board to the right.
+     *
+     * @return true if any tiles were moved, false otherwise.
+     */
+    public boolean moveRight() {
+        return move((row, col) -> grid[row][gridSize - 1 - col], (row, col, value) -> grid[row][gridSize - 1 - col] = value);
+    }
+
+    /**
+     * Moves the tiles on the game board up.
+     *
+     * @return true if any tiles were moved, false otherwise.
+     */
+    public boolean moveUp() {
+        return move((row, col) -> grid[col][row], (row, col, value) -> grid[col][row] = value);
+    }
+
+    /**
+     * Moves the tiles on the game board down.
+     *
+     * @return true if any tiles were moved, false otherwise.
+     */
+    public boolean moveDown() {
+        return move((row, col) -> grid[gridSize - 1 - col][row], (row, col, value) -> grid[gridSize - 1 - col][row] = value);
+    }
+
+    /**
+     * Functional interface to get the value at a given row and column.
+     */
+    @FunctionalInterface
+    private interface ValueGetter {
+        int getValue(int row, int col);
+    }
+
+    /**
+     * Functional interface to set the value at a given row and column.
+     */
+    @FunctionalInterface
+    private interface ValueSetter {
+        void setValue(int row, int col, int value);
+    }
+
+    /**
+     * Moves the tiles on the game board in a given direction.
+     *
+     * @param getter the function to get the value at a given row and column
+     * @param setter the function to set the value at a given row and column
+     * @return true if any tiles were moved, false otherwise.
+     */
+    private boolean move(ValueGetter getter, ValueSetter setter) {
         boolean moved = false;
+        // Move each row of the grid to the direction given by getter and setter
         for (int row = 0; row < gridSize; row++) {
             int[] newRow = new int[gridSize];
             int position = 0;
-            // Move non-zero values to the left
             for (int col = 0; col < gridSize; col++) {
-                if (grid[row][col] != 0) {
-                    newRow[position++] = grid[row][col];
+                int value = getter.getValue(row, col);
+                if (value != 0) {
+                    newRow[position++] = value;
                 }
             }
-            // Merge adjacent equal values
+            // Merge adjacent tiles with the same value
             for (int col = 0; col < gridSize - 1; col++) {
                 if (newRow[col] != 0 && newRow[col] == newRow[col + 1]) {
                     newRow[col] *= 2;
@@ -105,7 +162,6 @@ public class Board {
                     moved = true;
                 }
             }
-            // Move non-zero values to the left again
             position = 0;
             int[] finalRow = new int[gridSize];
             for (int col = 0; col < gridSize; col++) {
@@ -113,124 +169,10 @@ public class Board {
                     finalRow[position++] = newRow[col];
                 }
             }
-            // Update the row and check if it has changed
+            // Update the grid with the new row if it is different from the original row
             for (int col = 0; col < gridSize; col++) {
-                if (grid[row][col] != finalRow[col]) {
-                    grid[row][col] = finalRow[col];
-                    moved = true;
-                }
-            }
-        }
-        return moved;
-    }
-
-    public boolean moveRight() {
-        boolean moved = false;
-        for (int row = 0; row < gridSize; row++) {
-            int[] newRow = new int[gridSize];
-            int position = gridSize - 1;
-            // Move non-zero values to the right
-            for (int col = gridSize - 1; col >= 0; col--) {
-                if (grid[row][col] != 0) {
-                    newRow[position--] = grid[row][col];
-                }
-            }
-            // Merge adjacent equal values
-            for (int col = gridSize - 1; col > 0; col--) {
-                if (newRow[col] != 0 && newRow[col] == newRow[col - 1]) {
-                    newRow[col] *= 2;
-                    newRow[col - 1] = 0;
-                    moved = true;
-                }
-            }
-            // Move non-zero values to the right again
-            position = gridSize - 1;
-            int[] finalRow = new int[gridSize];
-            for (int col = gridSize - 1; col >= 0; col--) {
-                if (newRow[col] != 0) {
-                    finalRow[position--] = newRow[col];
-                }
-            }
-            // Update the row and check if it has changed
-            for (int col = 0; col < gridSize; col++) {
-                if (grid[row][col] != finalRow[col]) {
-                    grid[row][col] = finalRow[col];
-                    moved = true;
-                }
-            }
-        }
-        return moved;
-    }
-
-    public boolean moveUp() {
-        boolean moved = false;
-        for (int col = 0; col < gridSize; col++) {
-            int[] newCol = new int[gridSize];
-            int position = 0;
-            // Move non-zero values up
-            for (int row = 0; row < gridSize; row++) {
-                if (grid[row][col] != 0) {
-                    newCol[position++] = grid[row][col];
-                }
-            }
-            // Merge adjacent equal values
-            for (int row = 0; row < gridSize - 1; row++) {
-                if (newCol[row] != 0 && newCol[row] == newCol[row + 1]) {
-                    newCol[row] *= 2;
-                    newCol[row + 1] = 0;
-                    moved = true;
-                }
-            }
-            // Move non-zero values up again
-            position = 0;
-            int[] finalCol = new int[gridSize];
-            for (int row = 0; row < gridSize; row++) {
-                if (newCol[row] != 0) {
-                    finalCol[position++] = newCol[row];
-                }
-            }
-            // Update the column and check if it has changed
-            for (int row = 0; row < gridSize; row++) {
-                if (grid[row][col] != finalCol[row]) {
-                    grid[row][col] = finalCol[row];
-                    moved = true;
-                }
-            }
-        }
-        return moved;
-    }
-
-    public boolean moveDown() {
-        boolean moved = false;
-        for (int col = 0; col < gridSize; col++) {
-            int[] newCol = new int[gridSize];
-            int position = gridSize - 1;
-            // Move non-zero values down
-            for (int row = gridSize - 1; row >= 0; row--) {
-                if (grid[row][col] != 0) {
-                    newCol[position--] = grid[row][col];
-                }
-            }
-            // Merge adjacent equal values
-            for (int row = gridSize - 1; row > 0; row--) {
-                if (newCol[row] != 0 && newCol[row] == newCol[row - 1]) {
-                    newCol[row] *= 2;
-                    newCol[row - 1] = 0;
-                    moved = true;
-                }
-            }
-            // Move non-zero values down again
-            position = gridSize - 1;
-            int[] finalCol = new int[gridSize];
-            for (int row = gridSize - 1; row >= 0; row--) {
-                if (newCol[row] != 0) {
-                    finalCol[position--] = newCol[row];
-                }
-            }
-            // Update the column and check if it has changed
-            for (int row = 0; row < gridSize; row++) {
-                if (grid[row][col] != finalCol[row]) {
-                    grid[row][col] = finalCol[row];
+                if (getter.getValue(row, col) != finalRow[col]) {
+                    setter.setValue(row, col, finalRow[col]);
                     moved = true;
                 }
             }
