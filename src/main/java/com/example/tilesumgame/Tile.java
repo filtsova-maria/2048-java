@@ -30,6 +30,7 @@ public class Tile {
         this.text = new Text(value == 0 ? "" : String.valueOf(value));
         this.text.setFont(Font.font(24));
         this.stack.getChildren().addAll(background, text);
+        updateAppearance();
     }
 
     /**

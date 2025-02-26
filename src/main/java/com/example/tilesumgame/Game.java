@@ -25,6 +25,7 @@ public class Game extends Application {
     private final Tile[][] tiles = new Tile[gridSize][gridSize];
     private final GridPane gridPane = new GridPane();
     private final VBox root = new VBox();
+    private final Text winText = new Text("You win!");
     private final Text gameOverText = new Text("You lose!");
     private final Button restartButton = new Button("Restart");
 
@@ -64,7 +65,9 @@ public class Game extends Application {
                 logger.log(Level.FINE, board::printGrid);  // Log grid state after a new tile spawns
                 updateTiles();
             }
-            if (!board.canMove() && !board.hasWon()) {
+            if (board.hasWon()) {
+                displayWin(stage);
+            } else if (!board.canMove()) {
                 displayGameOver(stage);
             }
         });
@@ -94,6 +97,20 @@ public class Game extends Application {
         stage.show();
     }
 
+    private void displayWin(Stage stage) {
+        VBox winBox = new VBox();
+        winBox.setAlignment(Pos.CENTER);
+        winBox.setSpacing(10);
+
+        // Display the 2048 tile
+        Tile winTile = new Tile(2048, tileSize);
+
+        winBox.getChildren().addAll(winText, winTile.getStack(), restartButton);
+        Scene winScene = new Scene(winBox, tileSize * gridSize + padding, tileSize * gridSize + padding);
+        stage.setScene(winScene);
+        stage.show();
+    }
+
     private void initializeGrid() {
         int[][] boardState = board.getBoardState();
         for (int row = 0; row < gridSize; row++) {
@@ -114,9 +131,8 @@ public class Game extends Application {
         }
     }
 
+    // TODO: calculate and display score
     // TODO: animations
-    // TODO: win condition, screen
-    // TODO: score
 
     public static void main(String[] args) {
         launch();
