@@ -44,6 +44,7 @@ public class Game extends Application {
 
         initializeGrid();
         board.spawnTile();
+        logger.log(Level.FINE, board::printGrid);  // Log initial grid state
         updateTiles();
 
         scene.setOnKeyPressed(event -> {
@@ -57,25 +58,24 @@ public class Game extends Application {
             } else if (event.getCode() == KeyCode.DOWN) {
                 moved = board.moveDown();
             }
-            logger.log(Level.FINE, board::printGrid);  // Log grid state before a new tile spawns
-            if (moved && !board.isFull()) {
+            if (moved) {
+                logger.log(Level.FINE, board::printGrid);  // Log grid state before a new tile spawns
                 board.spawnTile();
+                logger.log(Level.FINE, board::printGrid);  // Log grid state after a new tile spawns
+                updateTiles();
             }
-            updateTiles();
-            logger.log(Level.FINE, board::printGrid);  // Log grid state after a new tile spawns
+            if (!board.canMove() && !board.hasWon()) {
+                displayGameOver(stage);
+            }
         });
 
         restartButton.setOnAction(_ -> {
-            root.getChildren().clear();
+            board = new Board(gridSize);
             gridPane.getChildren().clear();
-            for (int row = 0; row < gridSize; row++) {
-                for (int col = 0; col < gridSize; col++) {
-                    tiles[row][col].setValue(0);
-                }
-            }
-            root.getChildren().add(gridPane);
             initializeGrid();
             board.spawnTile();
+            updateTiles();
+            stage.setScene(scene);
             stage.show();
         });
 
@@ -84,10 +84,21 @@ public class Game extends Application {
         stage.show();
     }
 
+    private void displayGameOver(Stage stage) {
+        VBox gameOverBox = new VBox();
+        gameOverBox.setAlignment(Pos.CENTER);
+        gameOverBox.setSpacing(10);
+        gameOverBox.getChildren().addAll(gameOverText, restartButton);
+        Scene gameOverScene = new Scene(gameOverBox, tileSize * gridSize + padding, tileSize * gridSize + padding);
+        stage.setScene(gameOverScene);
+        stage.show();
+    }
+
     private void initializeGrid() {
+        int[][] boardState = board.getBoardState();
         for (int row = 0; row < gridSize; row++) {
             for (int col = 0; col < gridSize; col++) {
-                Tile tile = new Tile(0, tileSize);
+                Tile tile = new Tile(boardState[row][col], tileSize);
                 tiles[row][col] = tile;
                 gridPane.add(tile.getStack(), col, row);
             }
@@ -105,7 +116,6 @@ public class Game extends Application {
 
     // TODO: animations
     // TODO: win condition, screen
-    // TODO: game over condition, screen
     // TODO: score
 
     public static void main(String[] args) {

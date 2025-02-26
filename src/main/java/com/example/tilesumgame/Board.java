@@ -57,6 +57,9 @@ public class Board {
      * Spawns a new tile on the game board.
      */
     public void spawnTile() {
+        if (isFull()) {
+            return;
+        }
         Random rand = new Random();
         int row, col;
         do {
@@ -81,6 +84,43 @@ public class Board {
             }
         }
         return true;
+    }
+
+    /**
+     * Checks if the game board can move in any direction.
+     *
+     * @return true if the board can move, false otherwise.
+     */
+    public boolean canMove() {
+        if (!isFull()) {
+            return true;
+        }
+        for (int row = 0; row < gridSize; row++) {
+            for (int col = 0; col < gridSize; col++) {
+                int value = grid[row][col];
+                boolean canMerge = (col < gridSize - 1 && value == grid[row][col + 1]) || (row < gridSize - 1 && value == grid[row + 1][col]);
+                if (canMerge) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the player got the 2048 tile and therefore has won the game.
+     *
+     * @return true if the player has won, false otherwise.
+     */
+    public boolean hasWon() {
+        for (int row = 0; row < gridSize; row++) {
+            for (int col = 0; col < gridSize; col++) {
+                if (grid[row][col] == 2048) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     /**
