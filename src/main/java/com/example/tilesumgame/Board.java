@@ -18,10 +18,18 @@ public class Board {
         initializeGrid();
     }
 
+    /**
+     * Returns the current state of the game board.
+     *
+     * @return values of the tiles on the board.
+     */
     public int[][] getBoardState() {
         return grid;
     }
 
+    /**
+     * Initializes the game board with zeros.
+     */
     private void initializeGrid() {
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid[i].length; j++) {
@@ -30,6 +38,11 @@ public class Board {
         }
     }
 
+    /**
+     * A method to print the game board.
+     *
+     * @return a string representation of the game board as a grid of numbers.
+     */
     public String printGrid() {
         StringBuilder sb = new StringBuilder();
         sb.append("\n");
@@ -43,6 +56,9 @@ public class Board {
         return sb.toString();
     }
 
+    /**
+     * Spawns a new tile on the game board.
+     */
     public void spawnTile() {
         Random rand = new Random();
         int row, col;
@@ -52,9 +68,13 @@ public class Board {
         } while (grid[row][col] != 0);
         int value = rand.nextDouble() < 0.9 ? 2 : 4;
         grid[row][col] = value;
-        this.logger.log(Level.FINE, this::printGrid);
     }
 
+    /**
+     * Checks if the game board is full.
+     *
+     * @return true if the board is full, false otherwise.
+     */
     public boolean isFull() {
         for (int row = 0; row < gridSize; row++) {
             for (int col = 0; col < gridSize; col++) {

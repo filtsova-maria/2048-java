@@ -57,11 +57,12 @@ public class Game extends Application {
             } else if (event.getCode() == KeyCode.DOWN) {
                 moved = board.moveDown();
             }
+            logger.log(Level.FINE, board::printGrid);  // Log grid state before a new tile spawns
             if (moved && !board.isFull()) {
                 board.spawnTile();
             }
             updateTiles();
-            logger.log(Level.FINE, board::printGrid);  // Log grid state after each move
+            logger.log(Level.FINE, board::printGrid);  // Log grid state after a new tile spawns
         });
 
         restartButton.setOnAction(_ -> {
@@ -81,8 +82,6 @@ public class Game extends Application {
         stage.setTitle("2048 Game");
         stage.setScene(scene);
         stage.show();
-
-        logger.log(Level.FINE, board::printGrid);  // Log initial grid state
     }
 
     private void initializeGrid() {
