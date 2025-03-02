@@ -229,18 +229,22 @@ public class Game extends Application {
     /**
      * Updates the visuals based on the current board state.
      */
-    private void updateBoard(boolean spawnTile, Stage stage) {
-        if (spawnTile) {
-            // Spawn a new tile
+    private void updateBoard(boolean displayChanged, Stage stage) {
+        if (displayChanged) {
+            int[][] preSpawnBoardState = board.getBoardState();
             logger.log(Level.FINE, board::printGrid);  // Log grid state before a new tile spawns
             board.spawnTile();
             logger.log(Level.FINE, board::printGrid);  // Log grid state after a new tile spawns
 
-            // Update the visual board
-            int[][] boardState = board.getBoardState();
+            int[][] postSpawnBoardState = board.getBoardState();
             for (int row = 0; row < gridSize; row++) {
                 for (int col = 0; col < gridSize; col++) {
-                    tiles[row][col].setValue(boardState[row][col]);
+                    tiles[row][col].setValue(postSpawnBoardState[row][col]);
+                    // Animate the new tile spawn
+                    boolean isNewTile = postSpawnBoardState[row][col] != 0 && preSpawnBoardState[row][col] == 0;
+                    if (isNewTile) {
+                        tiles[row][col].animateSpawn();
+                    }
                 }
             }
             scoreText.setText("Score: " + board.getScore());
@@ -253,8 +257,11 @@ public class Game extends Application {
         }
     }
 
-    // TODO: animations
-
+    /**
+     * Launches the JavaFX application.
+     *
+     * @param args the command line arguments
+     */
     public static void main(String[] args) {
         launch();
     }

@@ -5,6 +5,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.animation.ScaleTransition;
+import javafx.util.Duration;
 
 /**
  * Represents a tile in the 2048 game grid.
@@ -90,5 +92,17 @@ public class Tile {
      */
     public StackPane getStack() {
         return stack;
+    }
+
+    /**
+     * Animates the tile when it spawns on the game board.
+     */
+    public void animateSpawn() {
+        ScaleTransition st = new ScaleTransition(Duration.millis(200), stack);
+        st.setFromX(0);
+        st.setFromY(0);
+        st.setToX(1);
+        st.setToY(1);
+        st.play();
     }
 }

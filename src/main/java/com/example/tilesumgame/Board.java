@@ -18,12 +18,16 @@ public class Board {
     }
 
     /**
-     * Returns the current state of the game board.
+     * Returns a copy of the current state of the game board.
      *
      * @return values of the tiles on the board.
      */
     public int[][] getBoardState() {
-        return grid;
+        int[][] copy = new int[gridSize][gridSize];
+        for (int i = 0; i < gridSize; i++) {
+            System.arraycopy(grid[i], 0, copy[i], 0, gridSize);
+        }
+        return copy;
     }
 
     /**
@@ -118,34 +122,34 @@ public class Board {
         return false;
     }
 
-   /**
-    * Checks if the game board can merge any tiles and returns the direction.
-    *
-    * @return the direction in which the board can merge, or null if no merge is possible.
-    */
-   public Direction canMerge() {
-       for (int row = 0; row < gridSize; row++) {
-           for (int col = 0; col < gridSize; col++) {
-               int value = grid[row][col];
-               if (value == 0) {
-                   continue;
-               }
-               if (col < gridSize - 1 && value == grid[row][col + 1]) {
-                   return Direction.RIGHT;
-               }
-               if (row < gridSize - 1 && value == grid[row + 1][col]) {
-                   return Direction.DOWN;
-               }
-               if (col > 0 && value == grid[row][col - 1]) {
-                   return Direction.LEFT;
-               }
-               if (row > 0 && value == grid[row - 1][col]) {
-                   return Direction.UP;
-               }
-           }
-       }
-       return null;
-   }
+    /**
+     * Checks if the game board can merge any tiles and returns the direction.
+     *
+     * @return the direction in which the board can merge, or null if no merge is possible.
+     */
+    public Direction canMerge() {
+        for (int row = 0; row < gridSize; row++) {
+            for (int col = 0; col < gridSize; col++) {
+                int value = grid[row][col];
+                if (value == 0) {
+                    continue;
+                }
+                if (col < gridSize - 1 && value == grid[row][col + 1]) {
+                    return Direction.RIGHT;
+                }
+                if (row < gridSize - 1 && value == grid[row + 1][col]) {
+                    return Direction.DOWN;
+                }
+                if (col > 0 && value == grid[row][col - 1]) {
+                    return Direction.LEFT;
+                }
+                if (row > 0 && value == grid[row - 1][col]) {
+                    return Direction.UP;
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * Checks if the player got the 2048 tile and therefore has won the game.
