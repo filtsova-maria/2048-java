@@ -1,8 +1,6 @@
 package com.example.tilesumgame;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.ScaleTransition;
-import javafx.animation.Timeline;
+import javafx.animation.*;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -29,13 +27,14 @@ public class Game extends Application {
     private static final int tileSize = 100;
     private static final int padding = 20;
     private static final int tileGap = 5;
-    private static final int bottomPadding = 50;
+    private static final int bottomPadding = 50 + padding;
 
     // Game board components
     private static Board board;
     private Tile[][] tiles;
     private final GridPane gridPane = new GridPane();
     private final VBox root = new VBox();
+    HBox scoreBox = new HBox();
 
     // Game over and victory components
     private final Text winText = new Text("You win!");
@@ -89,8 +88,8 @@ public class Game extends Application {
         root.setAlignment(Pos.CENTER);
 
         // Set up score display
-        HBox scoreBox = new HBox();
-        scoreBox.setAlignment(Pos.TOP_CENTER);
+        scoreBox.setAlignment(Pos.TOP_LEFT);
+        scoreBox.setPadding(new javafx.geometry.Insets((double) padding / 2, padding, (double) padding / 2, padding));
         scoreText.setFont(Font.font(24));
         scoreBox.getChildren().add(scoreText);
 
@@ -338,24 +337,54 @@ public class Game extends Application {
     private void updateScore() {
         int previousScore = Integer.parseInt(scoreText.getText().split(": ")[1]);
         int currentScore = board.getScore();
-        // Animate the score change by scaling the text twice
-        if (currentScore > previousScore) {
-            ScaleTransition st = new ScaleTransition(Duration.millis(200), scoreText);
-            st.setFromX(1);
-            st.setFromY(1);
-            st.setToX(1.5);
-            st.setToY(1.5);
-            st.setAutoReverse(true);
-            st.setCycleCount(2);
-            st.play();
-        }
-        scoreText.setText("Score: " + board.getScore());
+        int scoreChange = currentScore - previousScore;
 
-       // Change score color based on value
-        final int topScore = 1000; // Score at which the color is fully red, approximated by the time the player is nearing 2048
+        if (scoreChange > 0) {
+            animateScoreChange(scoreChange);
+        }
+
+        scoreText.setText("Score: " + currentScore);
+
+        // Change score color based on value
+        final int topScore = 10_000; // Score at which the color is fully red, approximated by the time the player is nearing 2048
         double ratio = (double) topScore / 255; // Clip score to 255 for RGB color value
         int redValue = Math.min(255, (int) (board.getScore() / ratio));
         scoreText.setFill(Color.rgb(redValue, 0, 0));
+    }
+
+    /**
+     * Animates the score change when a tile is merged.
+     *
+     * @param scoreChange the change in score
+     */
+    private void animateScoreChange(int scoreChange) {
+        // Calculate the scaling factor and color intensity based on scoreChange
+        double scaleFactor = 1 + Math.min(scoreChange / 100.0, 0.5); // Limit the scale factor to a maximum of 1.5
+        int redValue = Math.min(255, scoreChange * 2); // Limit the red value to a maximum of 255
+
+        // Animate the score change by scaling the text
+        ScaleTransition st = new ScaleTransition(Duration.millis(200), scoreText);
+        st.setFromX(1);
+        st.setFromY(1);
+        st.setToX(scaleFactor);
+        st.setToY(scaleFactor);
+        st.setAutoReverse(true);
+        st.setCycleCount(2);
+        st.play();
+
+        // Display the score change above the score text
+        Text scoreChangeText = new Text("+" + scoreChange);
+        scoreChangeText.setFont(Font.font(24));
+        scoreChangeText.setFill(Color.rgb(redValue, 0, 0));
+
+        scoreBox.getChildren().add(scoreChangeText);
+
+        // Animate the score change text with a fade transition
+        FadeTransition fadeTransition = new FadeTransition(Duration.millis(1000), scoreChangeText);
+        fadeTransition.setFromValue(1.0);
+        fadeTransition.setToValue(0.0);
+        fadeTransition.setOnFinished(event -> scoreBox.getChildren().remove(scoreChangeText));
+        fadeTransition.play();
     }
 
     /**
