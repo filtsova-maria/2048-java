@@ -87,7 +87,7 @@ public class Game extends Application {
         gridPane.setHgap(TILE_GAP);
         gridPane.setVgap(TILE_GAP);
         Scene scene = new Scene(root, windowSize, windowSize + BOTTOM_PADDING);
-        configureGameComponents(root);
+        configureGameComponents(root, stage);
         configureSolverTimeline(stage);
         configureEvents(stage, scene);
 
@@ -97,13 +97,22 @@ public class Game extends Application {
     /**
      * Configures the game components for display.
      */
-    private void configureGameComponents(VBox root) {
+    private void configureGameComponents(VBox root, Stage stage) {
         gameOverText.setFont(Font.font(32));
         winText.setFont(Font.font(32));
         restartButton.setPadding(BUTTON_PADDING);
+
+        // Create the quit button
+        Button quitButton = new Button("Quit");
+        quitButton.setOnAction(_ -> stage.setScene(createMainMenu(stage)));
+
+        // Create an HBox to hold the solver and quit buttons
+        HBox buttonBox = new HBox(10, solverButton, quitButton);
+        buttonBox.setAlignment(Pos.CENTER);
+
         root.setSpacing(5);
         root.setAlignment(Pos.CENTER);
-        root.getChildren().addAll(scoreDisplay.getScoreBox(), gridPane, solverButton);
+        root.getChildren().addAll(scoreDisplay.getScoreBox(), gridPane, buttonBox);
     }
 
     /**
@@ -180,24 +189,34 @@ public class Game extends Application {
      * @return the main menu scene
      */
     private Scene createMainMenu(Stage stage) {
+        // Create a VBox to hold the main menu components
         VBox mainMenuBox = new VBox();
         mainMenuBox.setAlignment(Pos.CENTER);
         mainMenuBox.setSpacing(10);
 
+        // Create the title text
         Text titleText = new Text("2048 Game");
         titleText.setFont(Font.font(32));
 
+        // Create the start button
         Button startButton = new Button("Start Game");
         startButton.setPadding(BUTTON_PADDING);
 
+        // Create the board size selection box
         HBox sizeSelectionBox = createSizeSelectionBox();
         configureStartButton(stage, startButton, sizeSelectionBox);
 
+        // Create the high scores button
         Button highScoresButton = new Button("High Scores");
         highScoresButton.setPadding(BUTTON_PADDING);
         highScoresButton.setOnAction(_ -> stage.setScene(createHighScoresMenu(stage)));
 
-        mainMenuBox.getChildren().addAll(titleText, sizeSelectionBox, startButton, highScoresButton);
+        // Create the exit button
+        Button exitButton = new Button("Exit");
+        exitButton.setPadding(BUTTON_PADDING);
+        exitButton.setOnAction(_ -> stage.close());
+
+        mainMenuBox.getChildren().addAll(titleText, sizeSelectionBox, startButton, highScoresButton, exitButton);
 
         return new Scene(mainMenuBox, 400, 300);
     }
