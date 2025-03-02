@@ -1,6 +1,7 @@
 package com.example.tilesumgame;
 
 import javafx.animation.KeyFrame;
+import javafx.animation.ScaleTransition;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Pos;
@@ -11,6 +12,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -68,6 +70,7 @@ public class Game extends Application {
         Scene scene = new Scene(root, windowSize, windowSize + bottomPadding);
         gameOverText.setFont(Font.font(32));
         winText.setFont(Font.font(32));
+        restartButton.setPadding(new javafx.geometry.Insets(10, 20, 10, 20));
         root.setSpacing(5);
         root.setAlignment(Pos.CENTER);
 
@@ -187,7 +190,7 @@ public class Game extends Application {
         VBox gameOverBox = new VBox();
         gameOverBox.setAlignment(Pos.CENTER);
         gameOverBox.setSpacing(10);
-        gameOverBox.getChildren().addAll(gameOverText, restartButton);
+        gameOverBox.getChildren().addAll(gameOverText, scoreText, restartButton);
         Scene gameOverScene = new Scene(gameOverBox, tileSize * gridSize + padding, tileSize * gridSize + padding);
         stage.setScene(gameOverScene);
         stage.show();
@@ -247,7 +250,7 @@ public class Game extends Application {
                     }
                 }
             }
-            scoreText.setText("Score: " + board.getScore());
+            updateScore();
         }
         // Check win/lose conditions
         if (board.hasWon()) {
@@ -255,6 +258,31 @@ public class Game extends Application {
         } else if (!board.canMove()) {
             displayGameOver(stage);
         }
+    }
+
+    /**
+     * Updates the score display based on the current game state.
+     */
+    private void updateScore() {
+        int previousScore = Integer.parseInt(scoreText.getText().split(": ")[1]);
+        int currentScore = board.getScore();
+        if (currentScore > previousScore) {
+            ScaleTransition st = new ScaleTransition(Duration.millis(200), scoreText);
+            st.setFromX(1);
+            st.setFromY(1);
+            st.setToX(1.5);
+            st.setToY(1.5);
+            st.setAutoReverse(true);
+            st.setCycleCount(2);
+            st.play();
+        }
+        scoreText.setText("Score: " + board.getScore());
+
+       // Change score color based on value
+        final int topScore = 1000; // Score at which the color is fully red, approximated by the time the player is nearing 2048
+        double ratio = (double) topScore / 255; // Clip score to 255 for RGB color value
+        int redValue = Math.min(255, (int) (board.getScore() / ratio));
+        scoreText.setFill(Color.rgb(redValue, 0, 0));
     }
 
     /**
