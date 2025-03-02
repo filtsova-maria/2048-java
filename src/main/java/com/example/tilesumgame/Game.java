@@ -106,8 +106,12 @@ public class Game extends Application {
         Button quitButton = new Button("Quit");
         quitButton.setOnAction(_ -> stage.setScene(createMainMenu(stage)));
 
+        // Create the restart button
+        Button restartGameButton = new Button("Restart");
+        restartGameButton.setOnAction(_ -> restartGame(stage));
+
         // Create an HBox to hold the solver and quit buttons
-        HBox buttonBox = new HBox(10, solverButton, quitButton);
+        HBox buttonBox = new HBox(10, solverButton, restartGameButton, quitButton);
         buttonBox.setAlignment(Pos.CENTER);
 
         root.setSpacing(5);
@@ -140,12 +144,16 @@ public class Game extends Application {
             boolean moved = false;
             if (event.getCode() == KeyCode.LEFT) {
                 moved = board.moveLeft();
+                event.consume(); // Prevent the event from bubbling up and triggering button navigation
             } else if (event.getCode() == KeyCode.RIGHT) {
                 moved = board.moveRight();
+                event.consume();
             } else if (event.getCode() == KeyCode.UP) {
                 moved = board.moveUp();
+                event.consume();
             } else if (event.getCode() == KeyCode.DOWN) {
                 moved = board.moveDown();
+                event.consume();
             }
             updateBoard(moved, stage);
         });
