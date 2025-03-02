@@ -1,4 +1,4 @@
-# 2048-java project description
+# 2048-java project overview
 
 - A clone of the popular mobile game [2048](https://en.wikipedia.org/wiki/2048_(video_game)#Gameplay).
 - **Grid**: 4x4.
@@ -12,6 +12,51 @@
     - **Win**: A tile with the number 2048 is created.
 - **Controls**: Arrow keys.
 - **Graphics**: JavaFX.
+
+# Developer Documentation
+
+## Project Architecture
+
+### Components
+
+1. **Main Application (`Game` class)**
+  - Entry point of the application.
+  - Manages the primary stage and scenes (main menu, game scene, high scores).
+  - Handles game initialization, event configuration, and scene transitions.
+
+2. **Game Logic (`Board` class)**
+  - Represents the game board and its state.
+  - Handles tile movements, merging, and spawning.
+  - Manages game rules, such as win/loss conditions and score calculation.
+
+3. **User Interface (`Tile`, `ScoreDisplay` classes)**
+  - `Tile`: Represents individual tiles on the game board, including their appearance and animations.
+  - `ScoreDisplay`: Manages the display and animation of the current score.
+
+4. **Event Handling**
+  - Configured in the `Game` class to handle user inputs (e.g., arrow keys for tile movement).
+  - Consumes key events to prevent default behavior affecting button focus.
+
+5. **Automatic Solver**
+  - Implemented as a timeline in the `Game` class.
+  - Automatically makes moves every second based on the current board state.
+
+6. **Score Management (`ScoreManager` class)**
+  - Handles saving and loading of high scores.
+  - Manages score persistence using a file (`"scores.txt"`).
+
+7. **Logging (`GameLogger` class)**
+  - Singleton class for logging game events and board states.
+  - Configurable logging levels for different granularity.
+  - Granularity can be passed in command line arguments via the `logLevel` parameter.
+
+### Dependencies
+- **JavaFX**: Used for building the graphical user interface.
+- **JUnit**: Used for testing purposes.
+
+### Build and Run
+- **Maven**: Used for project management and build automation.
+- **JavaFX Maven Plugin**: Configured for running the application and creating a custom runtime image.
 
 # User Documentation
 
