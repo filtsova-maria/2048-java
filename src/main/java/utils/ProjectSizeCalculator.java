@@ -35,7 +35,10 @@ public class ProjectSizeCalculator {
 
         for (File file : files) {
             if (file.isDirectory()) {
-                totalSize += calculateJavaFilesSize(file);
+                // Skip the unit test directory
+                if (!file.getName().equalsIgnoreCase("test")) {
+                    totalSize += calculateJavaFilesSize(file);
+                }
             } else if (file.isFile() && file.getName().endsWith(".java")) {
                 totalSize += file.length();
             }
