@@ -89,4 +89,45 @@ class BoardTest {
         assertEquals(4, board.getBoardState()[3][0], "Last tile should be 4 after merge");
         assertEquals(0, board.getBoardState()[2][0], "Second last tile should be 0 after merge");
     }
+
+    @Test
+    void canMove() {
+        assertTrue(board.canMove(), "Board should be able to move");
+        // Fill the board with numbers that cannot be merged
+        for (int row = 0; row < board.getBoardState().length; row++) {
+            for (int col = 0; col < board.getBoardState()[row].length; col++) {
+                board.getBoardState()[row][col] = row + col + 1;
+            }
+        }
+        assertFalse(board.canMove(), "Board should not be able to move");
+    }
+
+    @Test
+    void canMergeHorizontally() {
+        // Test merging two tiles horizontally
+        board.getBoardState()[0][0] = 2;
+        board.getBoardState()[0][1] = 2;
+        Direction direction = board.canMerge();
+        assertTrue(direction == Direction.LEFT || direction == Direction.RIGHT, "Board should be able to merge horizontally");
+    }
+
+    @Test
+    void canMergeVertically() {
+        // Test merging two tiles vertically
+        board.getBoardState()[0][0] = 2;
+        board.getBoardState()[1][0] = 2;
+        Direction direction = board.canMerge();
+        assertTrue(direction == Direction.UP || direction == Direction.DOWN, "Board should be able to merge vertically");
+    }
+
+    @Test
+    void cannotMerge() {
+        // Test when no tiles can be merged
+        board.getBoardState()[0][0] = 2;
+        board.getBoardState()[0][1] = 4;
+        board.getBoardState()[1][0] = 4;
+        board.getBoardState()[1][1] = 2;
+        Direction direction = board.canMerge();
+        assertNull(direction, "Board should not be able to merge");
+    }
 }

@@ -1,34 +1,52 @@
 package com.example.tilesumgame;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.util.logging.Level;
 
 public class Game extends Application {
+    // Logging
+    GameLogger logger;
+
+    // Game board dimensions
     private static final int gridSize = 4;
     private static final int tileSize = 100;
     private static final int padding = 20;
     private static final int tileGap = 5;
+    private static final int bottomPadding = 50;
 
+    // Game board components
     private static Board board;
-
     private final Tile[][] tiles = new Tile[gridSize][gridSize];
     private final GridPane gridPane = new GridPane();
-    private final Text winText = new Text("You win!");
     private final VBox root = new VBox();
+
+    // Game over and victory components
+    private final Text winText = new Text("You win!");
     private final Text gameOverText = new Text("You lose!");
     private final Button restartButton = new Button("Restart");
+
+    // Score components
     private final Text scoreText = new Text("Score: 0");
+
+    // Solver components
+    private final Button solverButton = new Button("Start Solver");
+    private Timeline solverTimeline;
+    private boolean solverRunning = false;
 
     /**
      * Launches the JavaFX application.
@@ -40,30 +58,42 @@ public class Game extends Application {
         // Set up logging from the command line arguments
         String logLevel = getParameters().getNamed().getOrDefault("logLevel", "FINE");
         GameLogger.initialize(Level.parse(logLevel));
-        GameLogger logger = GameLogger.getInstance();
-        board = new Board(gridSize);
+        logger = GameLogger.getInstance();
 
+        // Set up the JavaFX display components
         int windowSize = tileSize * gridSize + padding;
         gridPane.setAlignment(Pos.CENTER);
         gridPane.setHgap(tileGap);
         gridPane.setVgap(tileGap);
-        Scene scene = new Scene(root, windowSize, windowSize);
-
-        initializeGrid();
-        board.spawnTile();
-        logger.log(Level.FINE, board::printGrid);  // Log initial grid state
-        updateBoard();
-
-        HBox scoreBox = new HBox();
-        scoreBox.setAlignment(Pos.CENTER_LEFT);
-        scoreText.setFont(Font.font(24));
-        scoreBox.getChildren().add(scoreText);
-        root.getChildren().addAll(scoreBox, gridPane);
-
+        Scene scene = new Scene(root, windowSize, windowSize + bottomPadding);
         gameOverText.setFont(Font.font(32));
         winText.setFont(Font.font(32));
+        root.setSpacing(5);
+        root.setAlignment(Pos.CENTER);
 
-        scene.setOnKeyPressed(event -> {
+        // Initialize the game board
+        board = new Board(gridSize);
+        initializeGrid();
+        updateBoard(true, stage);
+
+        // Set up score display
+        HBox scoreBox = new HBox();
+        scoreBox.setAlignment(Pos.TOP_CENTER);
+        scoreText.setFont(Font.font(24));
+        scoreBox.getChildren().add(scoreText);
+
+        // Add the game components to the scene
+        root.getChildren().addAll(scoreBox, gridPane, solverButton);
+
+        // Set up solver timeline logic
+        solverTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+            boolean moved = performAutoMove();
+            updateBoard(moved, stage);
+        }));
+        solverTimeline.setCycleCount(Timeline.INDEFINITE);
+
+        // Set up key event handling
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             boolean moved = false;
             if (event.getCode() == KeyCode.LEFT) {
                 moved = board.moveLeft();
@@ -74,32 +104,78 @@ public class Game extends Application {
             } else if (event.getCode() == KeyCode.DOWN) {
                 moved = board.moveDown();
             }
-            if (moved) {
-                logger.log(Level.FINE, board::printGrid);  // Log grid state before a new tile spawns
-                board.spawnTile();
-                logger.log(Level.FINE, board::printGrid);  // Log grid state after a new tile spawns
-                updateBoard();
-            }
-            if (board.hasWon()) {
-                displayWin(stage);
-            } else if (!board.canMove()) {
-                displayGameOver(stage);
-            }
+            updateBoard(moved, stage);
         });
 
+        // Set up restart button
         restartButton.setOnAction(_ -> {
             board = new Board(gridSize);
             gridPane.getChildren().clear();
             initializeGrid();
-            board.spawnTile();
-            updateBoard();
+            updateBoard(true, stage);
             stage.setScene(scene);
             stage.show();
+        });
+
+        // Set up solver button
+        solverButton.setOnAction(event -> {
+            if (solverRunning) {
+                solverTimeline.stop();
+                solverButton.setText("Start Solver");
+            } else {
+                solverTimeline.play();
+                solverButton.setText("Pause Solver");
+            }
+            solverRunning = !solverRunning;
         });
 
         stage.setTitle("2048 Game");
         stage.setScene(scene);
         stage.show();
+    }
+
+    private boolean performAutoMove() {
+        boolean moved = false;
+        Direction direction = board.canMerge();
+        if (direction != null) {
+            logger.log(Level.FINE, "Can merge to: " + direction);
+            switch (direction) {
+                case LEFT:
+                    moved = board.moveLeft();
+                    break;
+                case RIGHT:
+                    moved = board.moveRight();
+                    break;
+                case UP:
+                    moved = board.moveUp();
+                    break;
+                case DOWN:
+                    moved = board.moveDown();
+                    break;
+            }
+        } else {
+            for (Direction dir : Direction.values()) {
+                logger.log(Level.FINE, "Cannot merge, moving to: " + dir);
+                switch (dir) {
+                    case LEFT:
+                        moved = board.moveLeft();
+                        break;
+                    case RIGHT:
+                        moved = board.moveRight();
+                        break;
+                    case UP:
+                        moved = board.moveUp();
+                        break;
+                    case DOWN:
+                        moved = board.moveDown();
+                        break;
+                }
+                if (moved) {
+                    break;
+                }
+            }
+        }
+        return moved;
     }
 
     /**
@@ -153,14 +229,28 @@ public class Game extends Application {
     /**
      * Updates the visuals based on the current board state.
      */
-    private void updateBoard() {
-        int[][] boardState = board.getBoardState();
-        for (int row = 0; row < gridSize; row++) {
-            for (int col = 0; col < gridSize; col++) {
-                tiles[row][col].setValue(boardState[row][col]);
+    private void updateBoard(boolean spawnTile, Stage stage) {
+        if (spawnTile) {
+            // Spawn a new tile
+            logger.log(Level.FINE, board::printGrid);  // Log grid state before a new tile spawns
+            board.spawnTile();
+            logger.log(Level.FINE, board::printGrid);  // Log grid state after a new tile spawns
+
+            // Update the visual board
+            int[][] boardState = board.getBoardState();
+            for (int row = 0; row < gridSize; row++) {
+                for (int col = 0; col < gridSize; col++) {
+                    tiles[row][col].setValue(boardState[row][col]);
+                }
             }
+            scoreText.setText("Score: " + board.getScore());
         }
-        scoreText.setText("Score: " + board.getScore());
+        // Check win/lose conditions
+        if (board.hasWon()) {
+            displayWin(stage);
+        } else if (!board.canMove()) {
+            displayGameOver(stage);
+        }
     }
 
     // TODO: animations
@@ -168,5 +258,4 @@ public class Game extends Application {
     public static void main(String[] args) {
         launch();
     }
-
 }
