@@ -65,9 +65,13 @@
 ### Navigation
 
 - **Main Menu**: From the main menu, you can start a new game, view high scores, or exit the game.
+    - ![image](https://github.com/user-attachments/assets/70b161a1-a24f-4640-8c6f-8fabe2a068dc)
 - **In-Game**: During the game, you can move tiles using the arrow keys. You can also restart the game or return to the
   main menu using the buttons provided.
+    - ![image](https://github.com/user-attachments/assets/34c87a04-f0f6-42be-97f2-9cf26ee73e6e)  
 - **High Scores**: View the top scores from the high scores menu. You can return to the main menu from here.
+    - ![image](https://github.com/user-attachments/assets/eea3b5e1-e327-4086-a72b-d2c614861fea)
+
 
 ### Game Modes
 
@@ -87,6 +91,8 @@
       amount of scaling depends on the score change.
     - **Score Colors**: The color of the score text changes based on the current score. The higher the score, the more
       intense the red color becomes. This is determined by the ratio of the score to a predefined top score value.
+    - ![image](https://github.com/user-attachments/assets/370755ad-b89c-48fc-ac32-f932ef8357ac)
+
 - **Score Display**: The current score is displayed at the top left of the game screen. The score updates dynamically as
   you play.
 
