@@ -15,6 +15,10 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import java.net.URL;
 
 import java.util.logging.Level;
 
@@ -49,6 +53,9 @@ public class Game extends Application {
     private Timeline solverTimeline;
     private boolean solverRunning = false;
 
+    // Audio
+    private Clip mergeSound;
+
     /**
      * Launches the JavaFX application.
      *
@@ -56,6 +63,20 @@ public class Game extends Application {
      */
     @Override
     public void start(Stage stage) {
+        // Load the move sound effect
+        try {
+            URL soundURL = getClass().getResource("/sounds/boop.wav");
+            if (soundURL != null) {
+                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundURL);
+                mergeSound = AudioSystem.getClip();
+                mergeSound.open(audioInputStream);
+            } else {
+                System.err.println("Sound file not found: /sounds/boop.wav");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         // Set up logging from the command line arguments
         String logLevel = getParameters().getNamed().getOrDefault("logLevel", "FINE");
         GameLogger.initialize(Level.parse(logLevel));
@@ -341,6 +362,10 @@ public class Game extends Application {
 
         if (scoreChange > 0) {
             animateScoreChange(scoreChange);
+            if (mergeSound != null) {
+                mergeSound.setFramePosition(0); // Rewind to the beginning
+                mergeSound.start();
+            }
         }
 
         scoreText.setText("Score: " + currentScore);
