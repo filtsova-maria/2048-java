@@ -8,10 +8,12 @@ import java.util.Random;
 public class Board {
     private final int[][] grid;
     private final int gridSize;
+    private int score;
 
     public Board(int size) {
         this.grid = new int[size][size];
         this.gridSize = size;
+        this.score = 0;
         initializeGrid();
     }
 
@@ -22,6 +24,15 @@ public class Board {
      */
     public int[][] getBoardState() {
         return grid;
+    }
+
+    /**
+     * Returns the current score of the game.
+     *
+     * @return the current score.
+     */
+    public int getScore() {
+        return score;
     }
 
     /**
@@ -45,7 +56,7 @@ public class Board {
         sb.append("\n");
         for (int row = 0; row < grid.length; row++) {
             for (int col = 0; col < grid[0].length; col++) {
-                sb.append(grid[row][col]).append("\t");
+                sb.append(String.format("%4d", grid[row][col])).append("\t");
             }
             sb.append("\n");
         }
@@ -199,6 +210,7 @@ public class Board {
                 if (newRow[col] != 0 && newRow[col] == newRow[col + 1]) {
                     newRow[col] *= 2;
                     newRow[col + 1] = 0;
+                    score += newRow[col]; // Increment score by the merged value
                     moved = true;
                 }
             }
