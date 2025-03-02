@@ -25,7 +25,7 @@ public class Game extends Application {
     GameLogger logger;
 
     // Game board dimensions
-    private static final int gridSize = 4;
+    private int gridSize;
     private static final int tileSize = 100;
     private static final int padding = 20;
     private static final int tileGap = 5;
@@ -33,7 +33,7 @@ public class Game extends Application {
 
     // Game board components
     private static Board board;
-    private final Tile[][] tiles = new Tile[gridSize][gridSize];
+    private Tile[][] tiles;
     private final GridPane gridPane = new GridPane();
     private final VBox root = new VBox();
 
@@ -62,7 +62,21 @@ public class Game extends Application {
         GameLogger.initialize(Level.parse(logLevel));
         logger = GameLogger.getInstance();
 
-        // Set up the JavaFX display components
+        // Set up the main menu scene
+        Scene mainMenuScene = createMainMenu(stage);
+
+        stage.setTitle("2048 Game");
+        stage.setScene(mainMenuScene);
+        stage.show();
+    }
+
+    /**
+     * Creates the game scene with the game board and controls.
+     *
+     * @param stage the primary stage of the application
+     * @return the game scene
+     */
+    private Scene createGameScene(Stage stage) {
         int windowSize = tileSize * gridSize + padding;
         gridPane.setAlignment(Pos.CENTER);
         gridPane.setHgap(tileGap);
@@ -73,11 +87,6 @@ public class Game extends Application {
         restartButton.setPadding(new javafx.geometry.Insets(10, 20, 10, 20));
         root.setSpacing(5);
         root.setAlignment(Pos.CENTER);
-
-        // Initialize the game board
-        board = new Board(gridSize);
-        initializeGrid();
-        updateBoard(true, stage);
 
         // Set up score display
         HBox scoreBox = new HBox();
@@ -95,6 +104,13 @@ public class Game extends Application {
         }));
         solverTimeline.setCycleCount(Timeline.INDEFINITE);
 
+        // Set up event handling
+        configureEvents(stage, scene);
+
+        return scene;
+    }
+
+    private void configureEvents(Stage stage, Scene scene) {
         // Set up key event handling
         scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
             boolean moved = false;
@@ -131,12 +147,64 @@ public class Game extends Application {
             }
             solverRunning = !solverRunning;
         });
-
-        stage.setTitle("2048 Game");
-        stage.setScene(scene);
-        stage.show();
     }
 
+    /**
+     * Creates the main menu scene with a start button and board size selection.
+     *
+     * @param stage the primary stage of the application
+     * @return the main menu scene
+     */
+    private Scene createMainMenu(Stage stage) {
+        VBox mainMenuBox = new VBox();
+        mainMenuBox.setAlignment(Pos.CENTER);
+        mainMenuBox.setSpacing(10);
+
+        Text titleText = new Text("2048 Game");
+        titleText.setFont(Font.font(32));
+
+        Button startButton = new Button("Start Game");
+        startButton.setPadding(new javafx.geometry.Insets(10, 20, 10, 20));
+
+        // Add board size selection
+        HBox sizeSelectionBox = new HBox();
+        sizeSelectionBox.setAlignment(Pos.CENTER);
+        sizeSelectionBox.setSpacing(10);
+        Text sizeText = new Text("Board Size:");
+        sizeText.setFont(Font.font(16));
+        Button size4x4Button = new Button("4x4");
+        Button size5x5Button = new Button("5x5");
+        Button size6x6Button = new Button("6x6");
+        sizeSelectionBox.getChildren().addAll(sizeText, size4x4Button, size5x5Button, size6x6Button);
+
+        // Set default board size
+        final int[] selectedSize = {4};
+
+        size4x4Button.setOnAction(event -> selectedSize[0] = 4);
+        size5x5Button.setOnAction(event -> selectedSize[0] = 5);
+        size6x6Button.setOnAction(event -> selectedSize[0] = 6);
+
+        startButton.setOnAction(event -> {
+            gridSize = selectedSize[0];
+            board = new Board(selectedSize[0]);
+            tiles = new Tile[gridSize][gridSize];
+            initializeGrid();
+            updateBoard(true, stage);
+            stage.setScene(createGameScene(stage));
+        });
+
+        mainMenuBox.getChildren().addAll(titleText, sizeSelectionBox, startButton);
+
+        int mainMenuWidth = 400;
+        int mainMenuHeight = 300;
+        return new Scene(mainMenuBox, mainMenuHeight, mainMenuWidth);
+    }
+
+    /**
+     * Performs an automatic move based on the current board state.
+     *
+     * @return true if a move was performed, false otherwise
+     */
     private boolean performAutoMove() {
         boolean moved = false;
         Direction direction = board.canMerge();
@@ -190,7 +258,9 @@ public class Game extends Application {
         VBox gameOverBox = new VBox();
         gameOverBox.setAlignment(Pos.CENTER);
         gameOverBox.setSpacing(10);
-        gameOverBox.getChildren().addAll(gameOverText, scoreText, restartButton);
+        Button mainMenuButton = new Button("Main Menu");
+        mainMenuButton.setOnAction(event -> stage.setScene(createMainMenu(stage)));
+        gameOverBox.getChildren().addAll(gameOverText, scoreText, restartButton, mainMenuButton);
         Scene gameOverScene = new Scene(gameOverBox, tileSize * gridSize + padding, tileSize * gridSize + padding);
         stage.setScene(gameOverScene);
         stage.show();
@@ -205,11 +275,13 @@ public class Game extends Application {
         VBox winBox = new VBox();
         winBox.setAlignment(Pos.CENTER);
         winBox.setSpacing(10);
+        Button mainMenuButton = new Button("Main Menu");
+        mainMenuButton.setOnAction(event -> stage.setScene(createMainMenu(stage)));
 
         // Display the 2048 tile
         Tile winTile = new Tile(2048, tileSize);
 
-        winBox.getChildren().addAll(winText, winTile.getStack(), scoreText, restartButton);
+        winBox.getChildren().addAll(winText, winTile.getStack(), scoreText, restartButton, mainMenuButton);
         Scene winScene = new Scene(winBox, tileSize * gridSize + padding, tileSize * gridSize + padding);
         stage.setScene(winScene);
         stage.show();
@@ -266,6 +338,7 @@ public class Game extends Application {
     private void updateScore() {
         int previousScore = Integer.parseInt(scoreText.getText().split(": ")[1]);
         int currentScore = board.getScore();
+        // Animate the score change by scaling the text twice
         if (currentScore > previousScore) {
             ScaleTransition st = new ScaleTransition(Duration.millis(200), scoreText);
             st.setFromX(1);
