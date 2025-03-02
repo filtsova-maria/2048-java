@@ -93,7 +93,7 @@ public class ScoreDisplay {
         FadeTransition fadeTransition = new FadeTransition(Duration.millis(1000), scoreChangeText);
         fadeTransition.setFromValue(1.0);
         fadeTransition.setToValue(0.0);
-        fadeTransition.setOnFinished(event -> scoreBox.getChildren().remove(scoreChangeText));
+        fadeTransition.setOnFinished(_ -> scoreBox.getChildren().remove(scoreChangeText));
         fadeTransition.play();
     }
 }

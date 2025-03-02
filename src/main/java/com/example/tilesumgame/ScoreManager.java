@@ -5,6 +5,7 @@ import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Manages the scores of the players in the game.
@@ -13,6 +14,7 @@ import java.util.*;
 public class ScoreManager {
     private static final String SCORE_FILE = "scores.txt";
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final GameLogger logger = GameLogger.getInstance();
 
     /**
      * Saves the player's score to a file with the current date and time in the format "score|date".
@@ -27,7 +29,7 @@ public class ScoreManager {
             writer.write(scoreEntry);
             writer.newLine();
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Error saving score: " + e.getMessage());
         }
     }
 
@@ -44,7 +46,7 @@ public class ScoreManager {
             try {
                 Files.createFile(scoreFilePath);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.log(Level.WARNING, "Error creating score file: " + e.getMessage());
             }
         }
         try {
@@ -52,7 +54,7 @@ public class ScoreManager {
             // Sort the scores in descending order
             scores.sort((a, b) -> Integer.compare(Integer.parseInt(b.split("\\|")[0]), Integer.parseInt(a.split("\\|")[0])));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.log(Level.WARNING, "Error loading scores: " + e.getMessage());
         }
         return scores;
     }

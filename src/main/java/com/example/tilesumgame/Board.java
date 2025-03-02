@@ -1,6 +1,11 @@
 package com.example.tilesumgame;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import java.net.URL;
 import java.util.Random;
+import java.util.logging.Level;
 
 /*
  * Represents the logical game board for the 2048 game of given size.
@@ -9,12 +14,35 @@ public class Board {
     private final int[][] grid;
     private final int gridSize;
     private int score;
+    // Logger
+    private static final GameLogger logger = GameLogger.getInstance();
+    // Audio
+    private Clip mergeSound;
 
     public Board(int size) {
         this.grid = new int[size][size];
         this.gridSize = size;
         this.score = 0;
         initializeGrid();
+        loadSoundEffect();
+    }
+
+    /**
+     * Initializes game sound effects.
+     */
+    private void loadSoundEffect() {
+        try {
+            URL soundURL = getClass().getResource("/sounds/boop.wav");
+            if (soundURL != null) {
+                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundURL);
+                this.mergeSound = AudioSystem.getClip();
+                mergeSound.open(audioInputStream);
+            } else {
+                System.err.println("Sound file not found: /sounds/boop.wav");
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Error loading sound effect: " + e.getMessage());
+        }
     }
 
     /**
@@ -245,6 +273,9 @@ public class Board {
                     newRow[col + 1] = 0;
                     score += newRow[col]; // Increment score by the merged value
                     moved = true;
+                    // Play merge sound
+                    mergeSound.setFramePosition(0); // Rewind to the beginning
+                    mergeSound.start();
                 }
             }
             position = 0;

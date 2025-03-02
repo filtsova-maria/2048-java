@@ -17,10 +17,6 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import javax.sound.sampled.AudioInputStream;
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -40,7 +36,6 @@ public class Game extends Application {
     private static Board board;
     private Tile[][] tiles;
     private final GridPane gridPane = new GridPane();
-    private final VBox root = new VBox();
 
     // Game over and victory components
     private final Text winText = new Text("You win!");
@@ -62,32 +57,12 @@ public class Game extends Application {
      */
     @Override
     public void start(Stage stage) {
-        loadSoundEffect();
         initializeLogger();
         Scene mainMenuScene = createMainMenu(stage);
 
         stage.setTitle("2048 Game");
         stage.setScene(mainMenuScene);
         stage.show();
-    }
-
-    /**
-     * Initializes game sound effects.
-     */
-    private void loadSoundEffect() {
-        try {
-            URL soundURL = getClass().getResource("/sounds/boop.wav");
-            if (soundURL != null) {
-                AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(soundURL);
-                // Audio
-                Clip mergeSound = AudioSystem.getClip();
-                mergeSound.open(audioInputStream);
-            } else {
-                System.err.println("Sound file not found: /sounds/boop.wav");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -137,7 +112,7 @@ public class Game extends Application {
      * @param stage the primary stage of the application
      */
     private void configureSolverTimeline(Stage stage) {
-        solverTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+        solverTimeline = new Timeline(new KeyFrame(Duration.seconds(1), _ -> {
             boolean moved = performAutoMove();
             updateBoard(moved, stage);
         }));
@@ -167,7 +142,7 @@ public class Game extends Application {
         });
 
         restartButton.setOnAction(_ -> restartGame(stage));
-        solverButton.setOnAction(event -> toggleSolver());
+        solverButton.setOnAction(_ -> toggleSolver());
     }
 
     /**
@@ -220,7 +195,7 @@ public class Game extends Application {
 
         Button highScoresButton = new Button("High Scores");
         highScoresButton.setPadding(BUTTON_PADDING);
-        highScoresButton.setOnAction(event -> stage.setScene(createHighScoresMenu(stage)));
+        highScoresButton.setOnAction(_ -> stage.setScene(createHighScoresMenu(stage)));
 
         mainMenuBox.getChildren().addAll(titleText, sizeSelectionBox, startButton, highScoresButton);
 
@@ -246,9 +221,9 @@ public class Game extends Application {
         final int[] selectedSize = {4};
         sizeSelectionBox.setUserData(selectedSize);
 
-        size4x4Button.setOnAction(event -> selectedSize[0] = 4);
-        size5x5Button.setOnAction(event -> selectedSize[0] = 5);
-        size6x6Button.setOnAction(event -> selectedSize[0] = 6);
+        size4x4Button.setOnAction(_ -> selectedSize[0] = 4);
+        size5x5Button.setOnAction(_ -> selectedSize[0] = 5);
+        size6x6Button.setOnAction(_ -> selectedSize[0] = 6);
 
         return sizeSelectionBox;
     }
@@ -261,7 +236,7 @@ public class Game extends Application {
      * @param sizeSelectionBox the box containing the board size selection buttons
      */
     private void configureStartButton(Stage stage, Button startButton, HBox sizeSelectionBox) {
-        startButton.setOnAction(event -> {
+        startButton.setOnAction(_ -> {
             int[] selectedSize = (int[]) sizeSelectionBox.getUserData(); // Retrieve user data
             gridSize = selectedSize[0];
             board = new Board(gridSize);
@@ -303,7 +278,7 @@ public class Game extends Application {
         scoresArea.setPrefHeight(400);
 
         Button backButton = new Button("Back to Main Menu");
-        backButton.setOnAction(event -> stage.setScene(createMainMenu(stage)));
+        backButton.setOnAction(_ -> stage.setScene(createMainMenu(stage)));
 
         highScoresBox.getChildren().addAll(titleText, scoresArea, backButton);
 
@@ -316,7 +291,7 @@ public class Game extends Application {
      * @return true if a move was performed, false otherwise
      */
     private boolean performAutoMove() {
-        boolean moved = false;
+        boolean moved;
         Direction direction = board.canMerge();
         if (direction != null) {
             logger.log(Level.FINE, "Can merge to: " + direction);
@@ -334,22 +309,12 @@ public class Game extends Application {
      * @return true if the board was moved, false otherwise
      */
     private boolean moveBoard(Direction direction) {
-        boolean moved = false;
-        switch (direction) {
-            case LEFT:
-                moved = board.moveLeft();
-                break;
-            case RIGHT:
-                moved = board.moveRight();
-                break;
-            case UP:
-                moved = board.moveUp();
-                break;
-            case DOWN:
-                moved = board.moveDown();
-                break;
-        }
-        return moved;
+        return switch (direction) {
+            case LEFT -> board.moveLeft();
+            case RIGHT -> board.moveRight();
+            case UP -> board.moveUp();
+            case DOWN -> board.moveDown();
+        };
     }
 
     /**
@@ -380,7 +345,7 @@ public class Game extends Application {
         gameOverBox.setAlignment(Pos.CENTER);
         gameOverBox.setSpacing(10);
         Button mainMenuButton = new Button("Main Menu");
-        mainMenuButton.setOnAction(event -> stage.setScene(createMainMenu(stage)));
+        mainMenuButton.setOnAction(_ -> stage.setScene(createMainMenu(stage)));
         gameOverBox.getChildren().addAll(gameOverText, scoreDisplay.getScoreBox(), restartButton, mainMenuButton);
         displayTopScores(gameOverBox);
         Scene gameOverScene = new Scene(gameOverBox, TILE_SIZE * gridSize + PADDING, TILE_SIZE * gridSize + PADDING);
@@ -399,7 +364,7 @@ public class Game extends Application {
         winBox.setAlignment(Pos.CENTER);
         winBox.setSpacing(10);
         Button mainMenuButton = new Button("Main Menu");
-        mainMenuButton.setOnAction(event -> stage.setScene(createMainMenu(stage)));
+        mainMenuButton.setOnAction(_ -> stage.setScene(createMainMenu(stage)));
 
         // Display the 2048 tile
         Tile winTile = new Tile(2048, TILE_SIZE);
