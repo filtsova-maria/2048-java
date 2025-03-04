@@ -274,8 +274,10 @@ public class Board {
                     score += newRow[col]; // Increment score by the merged value
                     moved = true;
                     // Play merge sound
-                    mergeSound.setFramePosition(0); // Rewind to the beginning
-                    mergeSound.start();
+                    if (mergeSound != null) {
+                        mergeSound.setFramePosition(0); // Rewind to the beginning
+                        mergeSound.start();
+                    }
                 }
             }
             position = 0;
